@@ -1,4 +1,6 @@
 import com.android.build.gradle.api.ApplicationVariant
+import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /*
  * Copyright (c) 2012-2016 Arne Schwabe
@@ -8,6 +10,7 @@ import com.android.build.gradle.api.ApplicationVariant
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.plugin.parcelize)
     id("checkstyle")
 }
 
@@ -15,7 +18,29 @@ android {
     buildToolsVersion = "33.0.1"
     buildFeatures {
         aidl = true
+        compose = true
     }
+
+//    composeOptions {
+//        kotlinCompilerVersion("1.6.10") // Версия Kotlin для Compose
+//        kotlinCompilerExtensionVersion("1.1.0-alpha05") // Версия Compose
+//    }
+//
+//    tasks.withType(KotlinCompile::class.java).configureEach {
+//        kotlinOptions {
+//            jvmTarget = "1.8"
+//            useIR = true
+//        }
+//    }
+//
+//    // Регистрация задачи генерации кода для всех вариантов сборки
+//    applicationVariants.all(Action { variant ->
+//        val sourceDir = registerGenTask(variant.name, variant.baseName.replace("-", "/"))
+//        val task = tasks.named("generateOpenVPN3Swig${variant.name}").get()
+//
+//        variant.registerJavaGeneratingTask(task, sourceDir)
+//    })
+
     namespace = "de.blinkt.openvpn"
     compileSdk = 34
     //compileSdkPreview = "UpsideDownCake"
@@ -189,6 +214,14 @@ android {
     }
 }
 
+//// Необходимо также добавить Kotlin compiler plugin для поддержки Compose
+//tasks.withType(KotlinAndroidPluginWrapper::class.java).configureEach {
+//    kotlinOptions {
+//        jvmTarget = "1.8"
+//        useIR = true
+//    }
+//}
+
 var swigcmd = "swig"
 // Workaround for macOS(arm64) and macOS(intel) since it otherwise does not find swig and
 // I cannot get the Exec task to respect the PATH environment :(
@@ -234,6 +267,14 @@ dependencies {
     // https://maven.google.com/web/index.html
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.activity)
+//    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.compiler)
 
     uiImplementation(libs.android.view.material)
     uiImplementation(libs.androidx.appcompat)
