@@ -9,7 +9,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     tools:ignore="RtlCompat"
-    android:layout_marginTop="10dp">
+    android:layout_marginTop="20dp">
     <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,13 +25,15 @@
                 android:layout_alignParentEnd="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:padding="10dp"
         />
         <TextView
                 android:id="@+id/default_allow_text"
-                style="@android:style/TextAppearance.Medium.Inverse"
+                style="@android:style/TextAppearance.Medium"
                 tools:text="@string/vpn_disallow_radio"
                 android:layout_toStartOf="@id/default_allow"
+            android:layout_centerVertical="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
@@ -53,12 +55,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
-
+                android:layout_centerVertical="true"
         />
         <TextView
-                style="@android:style/TextAppearance.Medium.Inverse"
+                style="@android:style/TextAppearance.Medium"
                 android:text="@string/vpn_allow_bypass"
                 android:layout_toStartOf="@id/allow_bypass"
+                android:layout_centerVertical="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
     </RelativeLayout>

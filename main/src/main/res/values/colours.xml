@@ -7,13 +7,32 @@
 <resources>
     <!-- Indigo -->
     <!-- OpenVPN colours #203155, #C66D0D -->
-    <color name="primary">#3F51B5</color>      <!--500-->
-    <color name="primary_dark">#303F9F</color> <!--700-->
-    <color name="accent">#FFA726</color>       <!-- Orange 400 -->
+<!--    <color name="primary">#3F51B5</color>      &lt;!&ndash;500&ndash;&gt;-->
+<!--    <color name="primary_dark">#303F9F</color> &lt;!&ndash;700&ndash;&gt;-->
+<!--    <color name="accent">#FFA726</color>       &lt;!&ndash; Orange 400 &ndash;&gt;-->
+<!--    <color name="gelb">#ffff00</color>-->
+<!--    <color name="rot">#ff0000</color>-->
+
+<!--    <color name="switchbar">@android:color/darker_gray</color>-->
+
+
+<!--    <color name="background_tab_pressed">#1AFFFFFF</color>-->
+
+
+<!--    <color name="dataIn">#ff0000</color>-->
+<!--    <color name="dataOut">#0000ff</color>-->
+<!--    <color name="logobackground">#F2F2F2</color>-->
+
+
+    <color name="primary">#2F2B37</color>      <!--500-->
+    <color name="bg_primary">#1D1B26</color> <!--700-->
+    <color name="primary_dark">#2F2B37</color> <!--700-->
+    <color name="accent">#B4ABF6</color>       <!-- Orange 400 -->
     <color name="gelb">#ffff00</color>
     <color name="rot">#ff0000</color>
 
-    <color name="switchbar">@android:color/darker_gray</color>
+<!--    <color name="switchbar">@android:color/darker_gray</color>-->
+    <color name="switchbar">@android:color/transparent</color>
 
 
     <color name="background_tab_pressed">#1AFFFFFF</color>

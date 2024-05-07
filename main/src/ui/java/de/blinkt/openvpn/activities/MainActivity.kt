@@ -31,15 +31,15 @@ class MainActivity : BaseActivity() {
 
         /* Toolbar and slider should have the same elevation */disableToolbarElevation()
         mPagerAdapter.addTab(R.string.vpn_list_title, VPNProfileList::class.java)
-        mPagerAdapter.addTab(R.string.graph, GraphFragment::class.java)
+//        mPagerAdapter.addTab(R.string.graph, GraphFragment::class.java)
         mPagerAdapter.addTab(R.string.generalsettings, GeneralSettings::class.java)
-        mPagerAdapter.addTab(R.string.faq, FaqFragment::class.java)
+//        mPagerAdapter.addTab(R.string.faq, FaqFragment::class.java)
         if (SendDumpFragment.getLastestDump(this) != null) {
             mPagerAdapter.addTab(R.string.crashdump, SendDumpFragment::class.java)
         }
         if (isAndroidTV)
             mPagerAdapter.addTab(R.string.openvpn_log, LogFragment::class.java)
-        mPagerAdapter.addTab(R.string.about, AboutFragment::class.java)
+//        mPagerAdapter.addTab(R.string.about, AboutFragment::class.java)
         mPager.setAdapter(mPagerAdapter)
     }
 

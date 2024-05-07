@@ -275,6 +275,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.compiler)
+    implementation(libs.com.google.accompanist)
+    debugImplementation(libs.androidx.ui.tooling)
 
     uiImplementation(libs.android.view.material)
     uiImplementation(libs.androidx.appcompat)
