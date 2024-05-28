@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_vpn_list"
+        android:icon="@drawable/home"
+        android:title="Home" />
+    <item
+        android:id="@+id/nav_general_settings"
+        android:icon="@drawable/settings"
+        android:title="Settings" />
+    <!-- Add other items as needed -->
+</menu>
