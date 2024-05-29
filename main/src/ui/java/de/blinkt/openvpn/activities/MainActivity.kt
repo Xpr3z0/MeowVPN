@@ -10,6 +10,8 @@ import androidx.annotation.NonNull
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.core.view.children
+import androidx.core.view.get
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.fragment.app.Fragment
@@ -42,6 +44,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (savedInstanceState == null) {
             loadFragment(VPNProfileList())
             navigationView.setCheckedItem(R.id.nav_vpn_list)
+            navigationView.menu.getItem(0).isChecked = true
         }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -59,12 +62,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         var fragment: Fragment? = null
         when (item.itemId) {
             R.id.nav_vpn_list -> fragment = VPNProfileList()
+            R.id.nav_stats -> fragment = GraphFragment()
             R.id.nav_general_settings -> fragment = GeneralSettings()
+            R.id.nav_faq -> fragment = FaqFragment()
+            R.id.nav_about -> fragment = AboutFragment()
             // Add other cases for other menu items as needed
         }
 
         if (fragment != null) {
             loadFragment(fragment)
+            for (i in 0 until navigationView.menu.size()) {
+                navigationView.menu.getItem(i).isChecked = false
+            }
+            item.isChecked = true // Установить состояние checked для выбранного элемента
         }
 
         drawerLayout.closeDrawer(GravityCompat.START)
@@ -96,10 +106,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 uri?.let { checkUriForProfileImport(it) }
             }
             val page = intent.getStringExtra("PAGE")
-//            if ("graph" == page) {
-//                navigationView.setCheckedItem(R.id.nav_graph)
-//                loadFragment(GraphFragment())
-//            }
+            if ("graph" == page) {
+                navigationView.setCheckedItem(R.id.nav_stats)
+                loadFragment(GraphFragment())
+            }
             setIntent(null)
         }
     }

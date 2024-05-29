@@ -4,8 +4,20 @@
         android:icon="@drawable/home"
         android:title="Home" />
     <item
+        android:id="@+id/nav_stats"
+        android:icon="@drawable/stats"
+        android:title="Statistics" />
+    <item
         android:id="@+id/nav_general_settings"
         android:icon="@drawable/settings"
         android:title="Settings" />
+    <item
+        android:id="@+id/nav_faq"
+        android:icon="@drawable/faq"
+        android:title="FAQ" />
+    <item
+        android:id="@+id/nav_about"
+        android:icon="@drawable/about"
+        android:title="About" />
     <!-- Add other items as needed -->
 </menu>

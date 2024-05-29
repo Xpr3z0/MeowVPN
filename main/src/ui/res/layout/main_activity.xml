@@ -20,8 +20,15 @@
         android:layout_width="320dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+
         android:fitsSystemWindows="false"
-        android:background="@color/bg_primary"
+        android:background="@color/primary_dark"
+        app:itemIconPadding="24dp"
+        app:itemTextAppearance="@style/NavDrawerTextStyle"
+        app:itemIconTint="@color/nav_item_selector"
+        app:itemIconSize="28dp"
+        app:itemHorizontalPadding="24dp"
+        app:itemVerticalPadding="14dp"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer_menu"
         />

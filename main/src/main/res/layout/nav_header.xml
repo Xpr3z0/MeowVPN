@@ -11,10 +11,11 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:fontFamily="sans-serif-light"
+        android:text="*Current configuration*"
         android:textColor="@color/white"
-        android:text="*Current configuration*" />
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="match_parent"
