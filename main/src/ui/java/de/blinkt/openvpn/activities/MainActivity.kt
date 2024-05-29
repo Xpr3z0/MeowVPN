@@ -1,5 +1,6 @@
 package de.blinkt.openvpn.activities
 
+import android.content.ComponentName
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
@@ -13,11 +14,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.google.android.material.navigation.NavigationView
 import de.blinkt.openvpn.R
-import de.blinkt.openvpn.fragments.*
+import de.blinkt.openvpn.fragments.AboutFragment
+import de.blinkt.openvpn.fragments.FaqFragment
+import de.blinkt.openvpn.fragments.GeneralSettings
+import de.blinkt.openvpn.fragments.GraphFragment
+import de.blinkt.openvpn.fragments.ImportRemoteConfig
+import de.blinkt.openvpn.fragments.VPNProfileList
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawerLayout: DrawerLayout
@@ -55,6 +61,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.show_log) {
+            val startLW = Intent()
+            startLW.setComponent(
+                ComponentName(
+                    this,
+                    "$packageName.activities.LogWindow"
+                )
+            )
+            startLW.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            startActivity(startLW)
+        }
         if (toggle.onOptionsItemSelected(item)) {
             return true
         }
@@ -143,10 +160,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         asImportFrag.show(supportFragmentManager, "dialog")
     }
 
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        menuInflater.inflate(R.menu.main_menu, menu)
-//        return super.onCreateOptionsMenu(menu)
-//    }
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)

@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2012-2019 Arne Schwabe
- * Distributed under the GNU GPL v2 with additional terms. For full terms see the file doc/LICENSE.txt
- */
-
 package de.blinkt.openvpn.fragments;
 
 import android.Manifest;
@@ -22,15 +17,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.fragment.app.ListFragment;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Html;
-import android.text.Html.ImageGetter;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
@@ -40,7 +35,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -59,23 +53,24 @@ import de.blinkt.openvpn.activities.ConfigConverter;
 import de.blinkt.openvpn.activities.DisconnectVPN;
 import de.blinkt.openvpn.activities.FileSelect;
 import de.blinkt.openvpn.activities.VPNPreferences;
+import de.blinkt.openvpn.activities.mine.VPNProfileAdapter;
 import de.blinkt.openvpn.core.ConnectionStatus;
 import de.blinkt.openvpn.core.PasswordDialogFragment;
 import de.blinkt.openvpn.core.Preferences;
 import de.blinkt.openvpn.core.ProfileManager;
 import de.blinkt.openvpn.core.VpnStatus;
+import de.blinkt.openvpn.fragments.ImportRemoteConfig;
+import de.blinkt.openvpn.fragments.Utils;
 
 import static de.blinkt.openvpn.core.ConnectionStatus.LEVEL_WAITING_FOR_USER_INPUT;
 import static de.blinkt.openvpn.core.OpenVPNService.DISCONNECT_VPN;
 import static de.blinkt.openvpn.core.OpenVPNService.EXTRA_CHALLENGE_TXT;
 import static de.blinkt.openvpn.core.OpenVPNService.EXTRA_START_REASON;
 
-
-public class VPNProfileList extends ListFragment implements OnClickListener, VpnStatus.StateListener {
+public class VPNProfileList extends Fragment implements OnClickListener, VpnStatus.StateListener, VPNProfileAdapter.OnItemClickListener {
 
     public final static int RESULT_VPN_DELETED = Activity.RESULT_FIRST_USER;
     public final static int RESULT_VPN_DUPLICATE = Activity.RESULT_FIRST_USER + 1;
-    // Shortcut version is increased to refresh all shortcuts
     final static int SHORTCUT_VERSION = 1;
     private static final int MENU_ADD_PROFILE = Menu.FIRST;
     private static final int START_VPN_CONFIG = 92;
@@ -88,18 +83,21 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
     private static final String PREF_SORT_BY_LRU = "sortProfilesByLRU";
     protected VpnProfile mEditProfile = null;
     private String mLastStatusMessage;
-    private ArrayAdapter<VpnProfile> mArrayadapter;
+    private VPNProfileAdapter adapter;
     private Intent mLastIntent;
     private VpnProfile defaultVPN;
     private View mPermissionView;
     private ActivityResultLauncher<String> mPermReceiver;
+    private RecyclerView recyclerView;
+    private List<VpnProfile> vpnProfiles;
 
     @Override
     public void updateState(String state, String logmessage, final int localizedResId, ConnectionStatus level, Intent intent) {
         requireActivity().runOnUiThread(() -> {
             mLastStatusMessage = VpnStatus.getLastCleanLogMessage(getActivity());
             mLastIntent = intent;
-            mArrayadapter.notifyDataSetChanged();
+            adapter.setLastStatusMessage(mLastStatusMessage); // Передаем статус адаптеру
+            adapter.notifyDataSetChanged();
             showUserRequestDialogIfNeeded(level, intent);
         });
     }
@@ -137,8 +135,6 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        setListAdapter();
-
         registerPermissionReceiver();
     }
 
@@ -261,12 +257,13 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
     @Override
     public void onResume() {
         super.onResume();
-        setListAdapter();
+        populateVpnList();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             updateDynamicShortcuts();
         }
         VpnStatus.addStateListener(this);
         defaultVPN = ProfileManager.getAlwaysOnVPN(requireContext());
+        adapter.setDefaultVPN(defaultVPN); // Устанавливаем defaultVPN в адаптере
     }
 
     @Override
@@ -297,6 +294,12 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             checkForNotificationPermission(v);
 
+        recyclerView = v.findViewById(R.id.vpn_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        vpnProfiles = new LinkedList<>();
+        adapter = new VPNProfileAdapter(getContext(), vpnProfiles, this);
+        recyclerView.setAdapter(adapter);
 
         return v;
 
@@ -312,14 +315,6 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
         });
     }
 
-    private void setListAdapter() {
-        if (mArrayadapter == null) {
-            mArrayadapter = new VPNArrayAdapter(getActivity(), R.layout.vpn_list_item, R.id.vpn_item_title);
-
-        }
-        populateVpnList();
-    }
-
     private void populateVpnList() {
         boolean sortByLRU = Preferences.getDefaultSharedPreferences(requireActivity()).getBoolean(PREF_SORT_BY_LRU, false);
         getPM().refreshVPNList(requireContext());
@@ -331,11 +326,10 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
             sortedset = new TreeSet<>(new VpnProfileNameComparator());
 
         sortedset.addAll(allvpn);
-        mArrayadapter.clear();
-        mArrayadapter.addAll(sortedset);
+        vpnProfiles.clear();
+        vpnProfiles.addAll(sortedset);
 
-        setListAdapter(mArrayadapter);
-        mArrayadapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -472,7 +466,6 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
                             VpnProfile profile;
                             if (mCopyProfile != null) {
                                 profile = mCopyProfile.copy(name);
-                                // Remove restrictions on copy profile
                                 profile.mProfileCreator = null;
                                 profile.mUserEditable = true;
                             } else
@@ -494,7 +487,8 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
         getPM().addProfile(profile);
         getPM().saveProfileList(getActivity());
         getPM().saveProfile(getActivity(), profile);
-        mArrayadapter.add(profile);
+        vpnProfiles.add(profile);
+        adapter.notifyDataSetChanged();
     }
 
     private ProfileManager getPM() {
@@ -506,8 +500,9 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_VPN_DELETED) {
-            if (mArrayadapter != null && mEditProfile != null)
-                mArrayadapter.remove(mEditProfile);
+            if (mEditProfile != null)
+                vpnProfiles.remove(mEditProfile);
+            adapter.notifyDataSetChanged();
         } else if (resultCode == RESULT_VPN_DUPLICATE && data != null) {
             String profileUUID = data.getStringExtra(VpnProfile.EXTRA_PROFILEUUID);
             VpnProfile profile = ProfileManager.get(getActivity(), profileUUID);
@@ -523,8 +518,7 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
 
             VpnProfile profile = ProfileManager.get(getActivity(), configuredVPN);
             getPM().saveProfile(getActivity(), profile);
-            // Name could be modified, reset List adapter
-            setListAdapter();
+            populateVpnList();
 
         } else if (requestCode == SELECT_PROFILE) {
             String fileData = data.getStringExtra(FileSelect.RESULT_DATA);
@@ -533,7 +527,8 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
             startConfigImport(uri);
         } else if (requestCode == IMPORT_PROFILE) {
             String profileUUID = data.getStringExtra(VpnProfile.EXTRA_PROFILEUUID);
-            mArrayadapter.add(ProfileManager.get(getActivity(), profileUUID));
+            vpnProfiles.add(ProfileManager.get(getActivity(), profileUUID));
+            adapter.notifyDataSetChanged();
         } else if (requestCode == FILE_PICKER_RESULT_KITKAT) {
             if (data != null) {
                 Uri uri = data.getData();
@@ -574,7 +569,6 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
         @Override
         public int compare(VpnProfile lhs, VpnProfile rhs) {
             if (lhs == rhs)
-                // Catches also both null
                 return 0;
 
             if (lhs == null)
@@ -599,7 +593,6 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
         @Override
         public int compare(VpnProfile lhs, VpnProfile rhs) {
             if (lhs == rhs)
-                // Catches also both null
                 return 0;
 
             if (lhs == null)
@@ -607,7 +600,6 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
             if (rhs == null)
                 return 1;
 
-            // Copied from Long.compare
             if (lhs.mLastUsed > rhs.mLastUsed)
                 return -1;
             if (lhs.mLastUsed < rhs.mLastUsed)
@@ -617,53 +609,7 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
         }
     }
 
-    private class VPNArrayAdapter extends ArrayAdapter<VpnProfile> {
-
-        public VPNArrayAdapter(Context context, int resource,
-                               int textViewResourceId) {
-            super(context, resource, textViewResourceId);
-        }
-
-        @NonNull
-        @Override
-        public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
-            View v = super.getView(position, convertView, parent);
-
-            final VpnProfile profile = (VpnProfile) getListAdapter().getItem(position);
-
-            View titleview = v.findViewById(R.id.vpn_list_item_left);
-            titleview.setOnClickListener(v1 -> startOrStopVPN(profile));
-
-            View settingsview = v.findViewById(R.id.quickedit_settings);
-            settingsview.setOnClickListener(view -> editVPN(profile));
-
-            TextView subtitle = v.findViewById(R.id.vpn_item_subtitle);
-            SpannableStringBuilder warningText = Utils.getWarningText(requireContext(), profile);
-
-            if (profile == defaultVPN) {
-                if (warningText.length() > 0)
-                    warningText.append(" ");
-                warningText.append(new SpannableString("Default VPN"));
-            }
-
-            if (profile.getUUIDString().equals(VpnStatus.getLastConnectedVPNProfile())) {
-                subtitle.setText(mLastStatusMessage);
-                subtitle.setVisibility(View.VISIBLE);
-            } else {
-                subtitle.setText(warningText);
-                if (warningText.length() > 0)
-                    subtitle.setVisibility(View.VISIBLE);
-                else
-                    subtitle.setVisibility(View.GONE);
-            }
-
-
-            return v;
-        }
-    }
-
-    class MiniImageGetter implements ImageGetter {
-
+    class MiniImageGetter implements Html.ImageGetter {
 
         @Override
         public Drawable getDrawable(String source) {
@@ -673,7 +619,6 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
             else if ("ic_menu_archive".equals(source))
                 d = requireActivity().getResources().getDrawable(R.drawable.ic_menu_import_grey, requireActivity().getTheme());
 
-
             if (d != null) {
                 d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
                 return d;
@@ -681,5 +626,15 @@ public class VPNProfileList extends ListFragment implements OnClickListener, Vpn
                 return null;
             }
         }
+    }
+
+    @Override
+    public void onItemClick(VpnProfile profile) {
+        startOrStopVPN(profile);
+    }
+
+    @Override
+    public void onEditClick(VpnProfile profile) {
+        editVPN(profile);
     }
 }
