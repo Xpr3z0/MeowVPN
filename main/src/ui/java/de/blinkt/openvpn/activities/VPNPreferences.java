@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
@@ -195,6 +196,8 @@ public class VPNPreferences extends BaseActivity {
     }
 
     private void disableToolbarElevation() {
+        Toolbar myToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
         ActionBar toolbar = getSupportActionBar();
         toolbar.setElevation(0);
     }

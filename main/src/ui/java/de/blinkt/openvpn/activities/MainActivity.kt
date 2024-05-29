@@ -1,6 +1,7 @@
 package de.blinkt.openvpn.activities
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
@@ -9,16 +10,14 @@ import android.widget.Toast
 import androidx.annotation.NonNull
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
-import androidx.core.view.children
-import androidx.core.view.get
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import de.blinkt.openvpn.R
 import de.blinkt.openvpn.fragments.*
-import de.blinkt.openvpn.fragments.ImportRemoteConfig.Companion.newInstance
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var drawerLayout: DrawerLayout
@@ -29,14 +28,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
         drawerLayout = findViewById(R.id.drawer_layout)
         navigationView = findViewById(R.id.nav_view)
 
         toggle = ActionBarDrawerToggle(
-            this, drawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
         )
         drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
+
 
         navigationView.setNavigationItemSelectedListener(this)
 
@@ -49,6 +51,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
+        toggle.syncState()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -78,6 +81,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         drawerLayout.closeDrawer(GravityCompat.START)
+        if (item.title == getString(R.string.home)) {
+            setTitle(R.string.app)
+        } else {
+            title = item.title
+        }
         return true
     }
 
@@ -131,20 +139,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun startOpenVPNUrlImport(url: String) {
-        val asImportFrag = newInstance(url)
+        val asImportFrag = ImportRemoteConfig.newInstance(url)
         asImportFrag.show(supportFragmentManager, "dialog")
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        if (item.itemId == R.id.show_log) {
-//            val showLog = Intent(this, LogWindow::class.java)
-//            startActivity(showLog)
-//        }
-//        return super.onOptionsItemSelected(item)
+//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+//        menuInflater.inflate(R.menu.main_menu, menu)
+//        return super.onCreateOptionsMenu(menu)
 //    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        toggle.onConfigurationChanged(newConfig)
+    }
 }

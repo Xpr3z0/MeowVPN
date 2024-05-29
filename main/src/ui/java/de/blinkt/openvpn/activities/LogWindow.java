@@ -9,6 +9,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.appcompat.widget.Toolbar;
+
 import de.blinkt.openvpn.R;
 import de.blinkt.openvpn.fragments.LogFragment;
 
@@ -20,6 +22,8 @@ public class LogWindow extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.log_window);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (savedInstanceState == null) {
