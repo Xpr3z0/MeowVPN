@@ -26,8 +26,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Html;
-import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,7 +34,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,6 +67,8 @@ import static de.blinkt.openvpn.core.OpenVPNService.DISCONNECT_VPN;
 import static de.blinkt.openvpn.core.OpenVPNService.EXTRA_CHALLENGE_TXT;
 import static de.blinkt.openvpn.core.OpenVPNService.EXTRA_START_REASON;
 
+import com.google.android.material.button.MaterialButton;
+
 public class VPNProfileList extends Fragment implements OnClickListener, VpnStatus.StateListener, VPNProfileAdapter.OnItemClickListener {
 
     public final static int RESULT_VPN_DELETED = Activity.RESULT_FIRST_USER;
@@ -90,6 +92,8 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
     private ActivityResultLauncher<String> mPermReceiver;
     private RecyclerView recyclerView;
     private List<VpnProfile> vpnProfiles;
+    private VpnProfile lastUsedProfile;
+    private FrameLayout lastUsedProfileContainer;
 
     @Override
     public void updateState(String state, String logmessage, final int localizedResId, ConnectionStatus level, Intent intent) {
@@ -106,7 +110,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         if (level == LEVEL_WAITING_FOR_USER_INPUT) {
             if (intent != null && intent.getStringExtra(EXTRA_CHALLENGE_TXT) != null) {
                 PasswordDialogFragment pwInputFrag = PasswordDialogFragment.Companion.newInstance(intent, false);
-
                 pwInputFrag.show(getParentFragmentManager(), "dialog");
                 return true;
             }
@@ -119,6 +122,7 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
     }
 
     private void startOrStopVPN(VpnProfile profile) {
+        saveLastUsedProfile(profile.getUUIDString());
         if (VpnStatus.isVPNActive() && profile.getUUIDString().equals(VpnStatus.getLastConnectedVPNProfile())) {
             if (mLastIntent != null) {
                 startActivity(mLastIntent);
@@ -224,7 +228,7 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
             newShortcuts.add(createShortcut(p));
 
         if (updateShortcuts.size() > 0)
-            shortcutManager.updateShortcuts(updateShortcuts);
+            shortcutManager.updateShortcuts(            updateShortcuts);
         if (removeShortcuts.size() > 0)
             shortcutManager.removeDynamicShortcuts(removeShortcuts);
         if (newShortcuts.size() > 0)
@@ -264,6 +268,12 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         VpnStatus.addStateListener(this);
         defaultVPN = ProfileManager.getAlwaysOnVPN(requireContext());
         adapter.setDefaultVPN(defaultVPN); // Устанавливаем defaultVPN в адаптере
+
+        // Загрузка последней использованной конфигурации
+        loadLastUsedProfile();
+        if (lastUsedProfile != null) {
+            populateLastUsedProfile(lastUsedProfile);
+        }
     }
 
     @Override
@@ -301,8 +311,12 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         adapter = new VPNProfileAdapter(getContext(), vpnProfiles, this);
         recyclerView.setAdapter(adapter);
 
-        return v;
+        // Инициализация контейнера для последней использованной конфигурации
+        lastUsedProfileContainer = v.findViewById(R.id.last_used_profile_container);
+        MaterialButton connectButton = v.findViewById(R.id.connect_btn);
+        connectButton.setOnClickListener(view -> startOrStopVPN(lastUsedProfile));
 
+        return v;
     }
 
     private void checkForNotificationPermission(View v) {
@@ -424,7 +438,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private boolean startFilePicker() {
-
         Intent i = Utils.getFilePickerIntent(getActivity(), Utils.FileType.OVPN_CONFIG);
         if (i != null) {
             startActivityForResult(i, FILE_PICKER_RESULT_KITKAT);
@@ -480,7 +493,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
             dialog.setNegativeButton(android.R.string.cancel, null);
             dialog.create().show();
         }
-
     }
 
     private void addProfile(VpnProfile profile) {
@@ -535,7 +547,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
                 startConfigImport(uri);
             }
         }
-
     }
 
     private void startConfigImport(Uri uri) {
@@ -554,7 +565,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
     }
 
     private void startVPN(VpnProfile profile) {
-
         getPM().saveProfile(getActivity(), profile);
 
         Intent intent = new Intent(getActivity(), LaunchVPN.class);
@@ -564,42 +574,65 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         startActivity(intent);
     }
 
-    static class VpnProfileNameComparator implements Comparator<VpnProfile> {
+    private void loadLastUsedProfile() {
+        SharedPreferences prefs = Preferences.getDefaultSharedPreferences(requireContext());
+        String lastUsedProfileUUID = prefs.getString("last_used_vpn_profile", null);
+        if (lastUsedProfileUUID != null) {
+            lastUsedProfile = ProfileManager.get(getContext(), lastUsedProfileUUID);
+        }
+    }
 
+    private void saveLastUsedProfile(String uuid) {
+        SharedPreferences prefs = Preferences.getDefaultSharedPreferences(requireContext());
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("last_used_vpn_profile", uuid);
+        editor.apply();
+    }
+
+    private void populateLastUsedProfile(VpnProfile profile) {
+        lastUsedProfileContainer.removeAllViews();
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        View lastUsedProfileView = inflater.inflate(R.layout.vpn_list_item, lastUsedProfileContainer, false);
+
+        TextView title = lastUsedProfileView.findViewById(R.id.vpn_item_title);
+        TextView subtitle = lastUsedProfileView.findViewById(R.id.vpn_item_subtitle);
+        ImageView quickEditSettings = lastUsedProfileView.findViewById(R.id.quickedit_settings);
+
+        title.setText(profile.getName());
+        subtitle.setText(profile.getUUIDString()); // или другой текст, соответствующий профилю
+        quickEditSettings.setOnClickListener(v -> editVPN(profile));
+
+        lastUsedProfileContainer.addView(lastUsedProfileView);
+    }
+
+    static class VpnProfileNameComparator implements Comparator<VpnProfile> {
         @Override
         public int compare(VpnProfile lhs, VpnProfile rhs) {
             if (lhs == rhs)
                 return 0;
-
             if (lhs == null)
                 return -1;
             if (rhs == null)
                 return 1;
-
             if (lhs.mName == null)
                 return -1;
             if (rhs.mName == null)
                 return 1;
-
             return lhs.mName.compareTo(rhs.mName);
         }
-
     }
 
     static class VpnProfileLRUComparator implements Comparator<VpnProfile> {
-
         VpnProfileNameComparator nameComparator = new VpnProfileNameComparator();
 
         @Override
         public int compare(VpnProfile lhs, VpnProfile rhs) {
             if (lhs == rhs)
                 return 0;
-
             if (lhs == null)
                 return -1;
             if (rhs == null)
                 return 1;
-
             if (lhs.mLastUsed > rhs.mLastUsed)
                 return -1;
             if (lhs.mLastUsed < rhs.mLastUsed)
@@ -610,7 +643,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
     }
 
     class MiniImageGetter implements Html.ImageGetter {
-
         @Override
         public Drawable getDrawable(String source) {
             Drawable d = null;
@@ -618,7 +650,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
                 d = requireActivity().getResources().getDrawable(R.drawable.ic_menu_add_grey, requireActivity().getTheme());
             else if ("ic_menu_archive".equals(source))
                 d = requireActivity().getResources().getDrawable(R.drawable.ic_menu_import_grey, requireActivity().getTheme());
-
             if (d != null) {
                 d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
                 return d;
@@ -638,3 +669,4 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         editVPN(profile);
     }
 }
+

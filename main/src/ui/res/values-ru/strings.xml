@@ -8,6 +8,7 @@
     <string name="statistics">Статистика</string>
     <string name="settings">Настройки</string>
     <string name="about_app">О приложении</string>
+    <string name="connect_btn_text">Подключиться</string>
     <string name="app">MeowVPN</string>
     <string name="address">Адрес сервера:</string>
     <string name="port">Порт сервера:</string>

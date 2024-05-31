@@ -39,6 +39,7 @@
         android:background="@color/primary_dark"
         app:itemIconPadding="24dp"
         app:itemTextAppearance="@style/NavDrawerTextStyle"
+        app:itemTextColor="@color/nav_item_selector"
         app:itemIconTint="@color/nav_item_selector"
         app:itemIconSize="28dp"
         app:itemHorizontalPadding="24dp"
