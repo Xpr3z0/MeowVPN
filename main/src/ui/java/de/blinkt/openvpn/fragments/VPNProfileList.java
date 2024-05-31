@@ -16,15 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,11 +30,26 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.graphics.Color;
+import android.view.animation.LinearInterpolator;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.button.MaterialButton;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 
 import de.blinkt.openvpn.LaunchVPN;
@@ -55,6 +61,7 @@ import de.blinkt.openvpn.activities.FileSelect;
 import de.blinkt.openvpn.activities.VPNPreferences;
 import de.blinkt.openvpn.activities.mine.VPNProfileAdapter;
 import de.blinkt.openvpn.core.ConnectionStatus;
+import de.blinkt.openvpn.core.DisconnectVPNService;
 import de.blinkt.openvpn.core.PasswordDialogFragment;
 import de.blinkt.openvpn.core.Preferences;
 import de.blinkt.openvpn.core.ProfileManager;
@@ -66,8 +73,6 @@ import static de.blinkt.openvpn.core.ConnectionStatus.LEVEL_WAITING_FOR_USER_INP
 import static de.blinkt.openvpn.core.OpenVPNService.DISCONNECT_VPN;
 import static de.blinkt.openvpn.core.OpenVPNService.EXTRA_CHALLENGE_TXT;
 import static de.blinkt.openvpn.core.OpenVPNService.EXTRA_START_REASON;
-
-import com.google.android.material.button.MaterialButton;
 
 public class VPNProfileList extends Fragment implements OnClickListener, VpnStatus.StateListener, VPNProfileAdapter.OnItemClickListener {
 
@@ -94,6 +99,8 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
     private List<VpnProfile> vpnProfiles;
     private VpnProfile lastUsedProfile;
     private FrameLayout lastUsedProfileContainer;
+    private MaterialButton connectButton;
+    private boolean isConnecting = false;
 
     @Override
     public void updateState(String state, String logmessage, final int localizedResId, ConnectionStatus level, Intent intent) {
@@ -103,6 +110,19 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
             adapter.setLastStatusMessage(mLastStatusMessage); // Передаем статус адаптеру
             adapter.notifyDataSetChanged();
             showUserRequestDialogIfNeeded(level, intent);
+
+            if (level == ConnectionStatus.LEVEL_CONNECTED) {
+                connectButton.setText(R.string.disconnect_btn_text);
+                connectButton.setBackgroundColor(getResources().getColor(R.color.btn_accent));
+                isConnecting = false;
+            } else if (level == ConnectionStatus.LEVEL_NOTCONNECTED) {
+                connectButton.setText(R.string.connect_btn_text);
+                connectButton.setBackgroundColor(getResources().getColor(R.color.btn_accent));
+                isConnecting = false;
+            } else {
+                connectButton.setText(R.string.cancel_conn_btn_text);
+                connectButton.setBackgroundColor(getResources().getColor(R.color.btn_gray));
+            }
         });
     }
 
@@ -127,12 +147,23 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
             if (mLastIntent != null) {
                 startActivity(mLastIntent);
             } else {
-                Intent disconnectVPN = new Intent(getActivity(), DisconnectVPN.class);
-                startActivity(disconnectVPN);
+                Intent disconnectIntent = new Intent(getActivity(), DisconnectVPNService.class);
+                Objects.requireNonNull(getActivity()).startService(disconnectIntent);
             }
         } else {
             startVPN(profile);
         }
+    }
+
+
+    private void startButtonAnimation() {
+        ObjectAnimator animator = ObjectAnimator.ofArgb(connectButton, "backgroundColor", Color.GRAY, Color.BLUE);
+        animator.setDuration(1000);
+        animator.setInterpolator(new LinearInterpolator());
+        animator.setRepeatCount(ValueAnimator.INFINITE);
+        animator.setRepeatMode(ValueAnimator.REVERSE);
+        animator.start();
+        isConnecting = true;
     }
 
     @Override
@@ -159,7 +190,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         List<ShortcutInfo> shortcuts = shortcutManager.getDynamicShortcuts();
         int maxvpn = shortcutManager.getMaxShortcutCountPerActivity() - 1;
 
-
         ShortcutInfo disconnectShortcut = new ShortcutInfo.Builder(getContext(), "disconnectVPN")
                 .setShortLabel("Disconnect")
                 .setLongLabel("Disconnect VPN")
@@ -175,7 +205,6 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         LinkedList<String> disableShortcuts = new LinkedList<>();
 
         boolean addDisconnect = true;
-
 
         TreeSet<VpnProfile> sortedProfilesLRU = new TreeSet<VpnProfile>(new VpnProfileLRUComparator());
         ProfileManager profileManager = ProfileManager.getInstance(getContext());
@@ -216,11 +245,8 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
                             || shortcut.getExtras().getInt("version") != SHORTCUT_VERSION)
                         updateShortcuts.add(createShortcut(p));
 
-
                 }
-
             }
-
         }
         if (addDisconnect)
             newShortcuts.add(disconnectShortcut);
@@ -228,7 +254,7 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
             newShortcuts.add(createShortcut(p));
 
         if (updateShortcuts.size() > 0)
-            shortcutManager.updateShortcuts(            updateShortcuts);
+            shortcutManager.updateShortcuts(updateShortcuts);
         if (removeShortcuts.size() > 0)
             shortcutManager.removeDynamicShortcuts(removeShortcuts);
         if (newShortcuts.size() > 0)
@@ -313,8 +339,17 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
 
         // Инициализация контейнера для последней использованной конфигурации
         lastUsedProfileContainer = v.findViewById(R.id.last_used_profile_container);
-        MaterialButton connectButton = v.findViewById(R.id.connect_btn);
-        connectButton.setOnClickListener(view -> startOrStopVPN(lastUsedProfile));
+        connectButton = v.findViewById(R.id.connect_btn);
+        connectButton.setOnClickListener(view -> {
+            if (lastUsedProfile != null) {
+                if (isConnecting) {
+                    // Отмена подключения
+                    VpnStatus.updateStateString("USER_VPN_CANCEL", "", 0, ConnectionStatus.LEVEL_NOTCONNECTED);
+                } else {
+                    startOrStopVPN(lastUsedProfile);
+                }
+            }
+        });
 
         return v;
     }
@@ -669,4 +704,3 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         editVPN(profile);
     }
 }
-

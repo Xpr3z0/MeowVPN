@@ -123,9 +123,12 @@
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:text="@string/connect_btn_text"
+                    app:cornerRadius="12dp"
+                    app:rippleColor="@color/btn_ripple"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
