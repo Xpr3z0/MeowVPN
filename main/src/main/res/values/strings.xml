@@ -520,4 +520,7 @@
     <string name="connect_btn_text">Connect</string>
     <string name="cancel_conn_btn_text">Cancel</string>
     <string name="disconnect_btn_text">Disconnect</string>
+    <string name="last_conf_state_disconnected">Disconnected</string>
+    <string name="last_conf_state_connected">Connected</string>
+    <string name="last_conf_state_connecting">Connecting...</string>
 </resources>

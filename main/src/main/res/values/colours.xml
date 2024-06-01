@@ -35,6 +35,9 @@
     <color name="gelb">#ffff00</color>
     <color name="rot">#ff0000</color>
     <color name="white">#FFFFFF</color>
+    <color name="state_connected">#4CAF50</color>
+    <color name="state_connecting">#D19D00</color>
+    <color name="state_disconnected">#888888</color>
     <color name="last_conn_card_bg">#16151A</color>
 
 <!--    <color name="switchbar">@android:color/darker_gray</color>-->

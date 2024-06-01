@@ -66,8 +66,6 @@ import de.blinkt.openvpn.core.PasswordDialogFragment;
 import de.blinkt.openvpn.core.Preferences;
 import de.blinkt.openvpn.core.ProfileManager;
 import de.blinkt.openvpn.core.VpnStatus;
-import de.blinkt.openvpn.fragments.ImportRemoteConfig;
-import de.blinkt.openvpn.fragments.Utils;
 
 import static de.blinkt.openvpn.core.ConnectionStatus.LEVEL_WAITING_FOR_USER_INPUT;
 import static de.blinkt.openvpn.core.OpenVPNService.DISCONNECT_VPN;
@@ -99,6 +97,10 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
     private List<VpnProfile> vpnProfiles;
     private VpnProfile lastUsedProfile;
     private FrameLayout lastUsedProfileContainer;
+    private View lastUsedProfileView;
+    private TextView cardViewItemSubtitle;
+    private String lastUsedProfileState;
+    private int lastUsedProfileStateColor;
     private MaterialButton connectButton;
     private boolean isConnecting = false;
 
@@ -110,19 +112,31 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
             adapter.setLastStatusMessage(mLastStatusMessage); // Передаем статус адаптеру
             adapter.notifyDataSetChanged();
             showUserRequestDialogIfNeeded(level, intent);
+            loadLastUsedProfile();
+            populateLastUsedProfile(lastUsedProfile);
+            cardViewItemSubtitle = lastUsedProfileView.findViewById(R.id.vpn_item_subtitle);
 
             if (level == ConnectionStatus.LEVEL_CONNECTED) {
                 connectButton.setText(R.string.disconnect_btn_text);
                 connectButton.setBackgroundColor(getResources().getColor(R.color.btn_accent));
+                lastUsedProfileState = getString(R.string.last_conf_state_connected);
+                lastUsedProfileStateColor = getResources().getColor(R.color.state_connected);
                 isConnecting = false;
             } else if (level == ConnectionStatus.LEVEL_NOTCONNECTED) {
                 connectButton.setText(R.string.connect_btn_text);
                 connectButton.setBackgroundColor(getResources().getColor(R.color.btn_accent));
+                lastUsedProfileState = getString(R.string.last_conf_state_disconnected);
+                lastUsedProfileStateColor = getResources().getColor(R.color.state_disconnected);
                 isConnecting = false;
             } else {
                 connectButton.setText(R.string.cancel_conn_btn_text);
+                lastUsedProfileState = getString(R.string.last_conf_state_connecting);
+                lastUsedProfileStateColor = getResources().getColor(R.color.state_connecting);
                 connectButton.setBackgroundColor(getResources().getColor(R.color.btn_gray));
             }
+            cardViewItemSubtitle.setTextColor(lastUsedProfileStateColor);
+            cardViewItemSubtitle.setText(lastUsedProfileState);
+            System.out.println(lastUsedProfileStateColor);
         });
     }
 
@@ -302,6 +316,7 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         }
     }
 
+
     @Override
     public void onPause() {
         super.onPause();
@@ -312,6 +327,8 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.vpn_profile_list, container, false);
+        lastUsedProfileView = inflater.inflate(R.layout.vpn_list_item, lastUsedProfileContainer, false);
+
 
         TextView newvpntext = (TextView) v.findViewById(R.id.add_new_vpn_hint);
         TextView importvpntext = (TextView) v.findViewById(R.id.import_vpn_hint);
@@ -614,8 +631,13 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
         String lastUsedProfileUUID = prefs.getString("last_used_vpn_profile", null);
         if (lastUsedProfileUUID != null) {
             lastUsedProfile = ProfileManager.get(getContext(), lastUsedProfileUUID);
+            if (lastUsedProfile == null) {
+                // Обработка ситуации, когда профиль не найден
+                prefs.edit().remove("last_used_vpn_profile").apply();
+            }
         }
     }
+
 
     private void saveLastUsedProfile(String uuid) {
         SharedPreferences prefs = Preferences.getDefaultSharedPreferences(requireContext());
@@ -625,20 +647,30 @@ public class VPNProfileList extends Fragment implements OnClickListener, VpnStat
     }
 
     private void populateLastUsedProfile(VpnProfile profile) {
+        if (profile == null) {
+            // Обработка ситуации, когда профиль равен null
+            return;
+        }
+
         lastUsedProfileContainer.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        View lastUsedProfileView = inflater.inflate(R.layout.vpn_list_item, lastUsedProfileContainer, false);
+
+        lastUsedProfileView = inflater.inflate(R.layout.vpn_list_item, lastUsedProfileContainer, false);
 
         TextView title = lastUsedProfileView.findViewById(R.id.vpn_item_title);
-        TextView subtitle = lastUsedProfileView.findViewById(R.id.vpn_item_subtitle);
+        cardViewItemSubtitle = lastUsedProfileView.findViewById(R.id.vpn_item_subtitle);
+        cardViewItemSubtitle.setText(lastUsedProfileState);
+        cardViewItemSubtitle.setTextColor(lastUsedProfileStateColor);
+        System.out.println(lastUsedProfileStateColor);
+
         ImageView quickEditSettings = lastUsedProfileView.findViewById(R.id.quickedit_settings);
 
         title.setText(profile.getName());
-        subtitle.setText(profile.getUUIDString()); // или другой текст, соответствующий профилю
         quickEditSettings.setOnClickListener(v -> editVPN(profile));
 
         lastUsedProfileContainer.addView(lastUsedProfileView);
     }
+
 
     static class VpnProfileNameComparator implements Comparator<VpnProfile> {
         @Override

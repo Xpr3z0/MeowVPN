@@ -89,7 +89,7 @@
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="250dp"
+            android:layout_height="220dp"
             android:elevation="4dp"
             app:cardCornerRadius="15dp"
             android:backgroundTint="@color/last_conn_card_bg"
@@ -104,7 +104,9 @@
                     android:id="@+id/last_used_profile_container"
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
-                    android:layout_margin="20dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="30dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -119,7 +121,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="40dp"
                     android:layout_marginEnd="40dp"
-                    android:layout_marginBottom="30dp"
+                    android:layout_marginBottom="40dp"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:text="@string/connect_btn_text"
