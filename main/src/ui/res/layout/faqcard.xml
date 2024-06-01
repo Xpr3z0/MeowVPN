@@ -11,6 +11,7 @@
     card_view:cardCornerRadius="10dp"
     android:elevation="10dp"
     android:layout_margin="10dp"
+    android:backgroundTint="@color/primary"
     android:layout_height="wrap_content">
     <LinearLayout
         android:orientation="vertical"

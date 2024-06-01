@@ -4,10 +4,12 @@
   ~ Distributed under the GNU GPL v2 with additional terms. For full terms see the file doc/LICENSE.txt
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <CheckBoxPreference
         android:key="routenopull"
+        app:iconSpaceReserved="false"
         android:summary="@string/ignore_routes_summary"
         android:title="@string/ignored_pushed_routes" />
 
@@ -15,41 +17,48 @@
         android:title="@string/blocklocal_title"
         android:summary="@string/blocklocal_summary"
         android:key="unblockLocal"
+        app:iconSpaceReserved="false"
     />
 
     <CheckBoxPreference
         android:title="@string/title_block_address_families"
         android:key="blockUnusedAF"
         android:summary="@string/summary_block_address_families"
+        app:iconSpaceReserved="false"
         />
-    <PreferenceCategory android:title="@string/ipv4" >
+    <PreferenceCategory android:title="@string/ipv4" app:iconSpaceReserved="false">
         <CheckBoxPreference
             android:disableDependentsState="true"
             android:key="useDefaultRoute"
             android:summary="@string/default_route_summary"
-            android:title="@string/use_default_title" />
+            android:title="@string/use_default_title"
+            app:iconSpaceReserved="false"/>
 
         <EditTextPreference
             android:dependency="useDefaultRoute"
             android:dialogMessage="@string/custom_route_message"
             android:key="customRoutes"
-            android:title="@string/custom_routes_title" />
+            android:title="@string/custom_routes_title"
+            app:iconSpaceReserved="false"/>
 
         <EditTextPreference
             android:dependency="useDefaultRoute"
+            app:iconSpaceReserved="false"
             android:dialogMessage="@string/custom_route_message_excluded"
             android:key="excludedRoutes"
             android:title="@string/custom_routes_title_excluded" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/ipv6" >
+    <PreferenceCategory android:title="@string/ipv6" app:iconSpaceReserved="false">
         <CheckBoxPreference
             android:disableDependentsState="true"
+            app:iconSpaceReserved="false"
             android:key="useDefaultRoutev6"
             android:summary="@string/default_route_summary"
             android:title="@string/use_default_title" />
 
         <EditTextPreference
             android:dependency="useDefaultRoutev6"
+            app:iconSpaceReserved="false"
             android:dialogMessage="@string/custom_route_message"
             android:key="customRoutesv6"
             android:title="@string/custom_routes_title" />
@@ -58,6 +67,7 @@
         <EditTextPreference
             android:enabled="false"
             android:dependency="useDefaultRoute"
+            app:iconSpaceReserved="false"
             android:dialogMessage="@string/custom_route_message_excluded"
             android:key="excludedRoutesv6"
             android:title="@string/custom_routes_title_excluded" />

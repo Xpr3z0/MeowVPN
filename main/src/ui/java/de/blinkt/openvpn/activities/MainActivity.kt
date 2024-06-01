@@ -117,7 +117,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.frame_container)
+            // Проверяем, текущий фрагмент является ли VPNProfileList
+            if (currentFragment !is VPNProfileList) {
+                onNavigationItemSelected(navigationView.menu.getItem(0))
+            } else {
+                super.onBackPressed()
+            }
         }
     }
 

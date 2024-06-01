@@ -4,65 +4,77 @@
   -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="@string/advanced_settings">
-    <PreferenceCategory android:title="@string/client_behaviour">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:title="@string/advanced_settings"
+    app:iconSpaceReserved="false">
+    <PreferenceCategory android:title="@string/client_behaviour" app:iconSpaceReserved="false">
 
         <CheckBoxPreference
             android:key="usePersistTun"
+            app:iconSpaceReserved="false"
             android:persistent="false"
             android:summary="@string/persisttun_summary"
             android:title="@string/persistent_tun_title" />
 
         <CheckBoxPreference
             android:key="peerInfo"
+            app:iconSpaceReserved="false"
             android:summary="@string/pushpeerinfosummary"
             android:title="@string/pushpeerinfo" />
     </PreferenceCategory>
 
     <CheckBoxPreference
         android:key="useRandomHostname"
+        app:iconSpaceReserved="false"
         android:persistent="false"
         android:summary="@string/random_host_summary"
         android:title="@string/random_host_prefix" />
     <CheckBoxPreference
         android:key="useFloat"
+        app:iconSpaceReserved="false"
         android:persistent="false"
         android:summary="@string/float_summary"
         android:title="@string/float_title" />
 
-    <PreferenceCategory android:title="@string/payload_options">
+    <PreferenceCategory android:title="@string/payload_options" app:iconSpaceReserved="false">
         <CheckBoxPreference
             android:key="mssFix"
+            app:iconSpaceReserved="false"
             android:persistent="false"
             android:title="@string/mssfix_checkbox" />
         <EditTextPreference
             android:dependency="mssFix"
+            app:iconSpaceReserved="false"
             android:dialogMessage="@string/mssfix_value_dialog"
             android:key="mssFixValue"
             android:persistent="false"
             android:title="@string/mssfix_dialogtitle" />
         <EditTextPreference
             android:key="tunmtu"
+            app:iconSpaceReserved="false"
             android:persistent="false"
             android:title="Tunnel MTU (tun-mtu)"/>
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/custom_config_title">
+    <PreferenceCategory android:title="@string/custom_config_title" app:iconSpaceReserved="false">
         <CheckBoxPreference
             android:key="enableCustomOptions"
+            app:iconSpaceReserved="false"
             android:persistent="false"
             android:summary="@string/custom_config_summary"
             android:title="@string/custom_config_title" />
 
         <EditTextPreference
             android:dependency="enableCustomOptions"
+            app:iconSpaceReserved="false"
             android:dialogMessage="@string/custom_option_warning"
             android:key="customOptions"
             android:persistent="false"
             android:title="@string/custom_options_title" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/reconnection_settings">
+    <PreferenceCategory android:title="@string/reconnection_settings" app:iconSpaceReserved="false">
         <ListPreference
             android:entries="@array/crm_entries"
+            app:iconSpaceReserved="false"
             android:entryValues="@array/crm_values"
             android:key="connectretrymax"
             android:persistent="false"
@@ -70,12 +82,14 @@
 
         <EditTextPreference
             android:dialogMessage="@string/connectretrymessage"
+            app:iconSpaceReserved="false"
             android:key="connectretry"
             android:persistent="false"
             android:title="@string/connectretrywait" />
 
         <EditTextPreference
             android:dialogMessage="@string/connectretrymaxmessage"
+            app:iconSpaceReserved="false"
             android:key="connectretrymaxtime"
             android:persistent="false"
             android:title="@string/connectretrymaxtitle" />

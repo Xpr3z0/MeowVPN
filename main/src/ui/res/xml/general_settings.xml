@@ -5,10 +5,12 @@
   -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-    <PreferenceCategory android:title="@string/appbehaviour" android:key="app_behaviour">
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="@string/appbehaviour" app:iconSpaceReserved="false" android:key="app_behaviour">
         <CheckBoxPreference
                 android:defaultValue="true"
+                app:iconSpaceReserved="false"
                 android:key="showlogwindow"
                 android:summary="@string/show_log_summary"
                 android:title="@string/show_log_window"/>
@@ -16,6 +18,7 @@
         <CheckBoxPreference
             android:defaultValue="@bool/allowTranslationDefault"
             android:key="allow_translation"
+            app:iconSpaceReserved="false"
             android:title="@string/allow_translations_title"
             android:summary="@string/allow_translations_summary"
         />
@@ -23,6 +26,7 @@
 
         <CheckBoxPreference
             android:defaultValue="false"
+            app:iconSpaceReserved="false"
             android:key="ovpn3"
             android:disableDependentsState="true"
             android:summaryOn="Use the C++ OpenVPN library (experimental)"
@@ -32,36 +36,42 @@
 
         <de.blinkt.openvpn.views.DefaultVPNListPreference
             android:key="alwaysOnVpn"
+            app:iconSpaceReserved="false"
             android:title="@string/defaultvpn"
             tools:summary="@string/defaultvpnsummary"
             />
 
         <CheckBoxPreference
                 android:defaultValue="false"
+                app:iconSpaceReserved="false"
                 android:key="restartvpnonboot"
                 android:summary="@string/keep_vpn_connected_summary"
                 android:title="@string/keep_vpn_connected"/>
 
         <CheckBoxPreference
                 android:defaultValue="true"
+                app:iconSpaceReserved="false"
                 android:key="preferencryption"
                 android:title="@string/encrypt_profiles"/>
 
         <Preference
                 android:key="clearapi"
+                app:iconSpaceReserved="false"
                 android:persistent="false"
                 android:title="@string/clear_external_apps"/>
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/vpnbehaviour">
+    <PreferenceCategory android:title="@string/vpnbehaviour" app:iconSpaceReserved="false">
         <CheckBoxPreference
                 android:defaultValue="true"
                 android:key="usesystemproxy"
                 android:dependency="ovpn3"
+                app:iconSpaceReserved="false"
                 android:summary="@string/use_system_proxy_summary"
                 android:title="@string/use_system_proxy"/>
         <CheckBoxPreference
                 android:defaultValue="true"
+                app:iconSpaceReserved="false"
                 android:key="netchangereconnect"
                 android:summary="@string/netchange_summary"
                 android:title="@string/netchange"/>
@@ -70,30 +80,35 @@
         <CheckBoxPreference
                 android:defaultValue="false"
                 android:key="screenoff"
+                app:iconSpaceReserved="false"
                 android:summary="@string/screenoff_summary"
                 android:title="@string/screenoff_title"/>
 
         <Preference
                 android:dependency=""
+            app:iconSpaceReserved="false"
             android:key="osslspeed"
             android:persistent="false"
             android:title="@string/osslspeedtest" />
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/device_specific" android:key="device_hacks">
+    <PreferenceCategory android:title="@string/device_specific" app:iconSpaceReserved="false" android:key="device_hacks">
         <CheckBoxPreference
                 android:defaultValue="false"
                 android:key="useCM9Fix"
+                app:iconSpaceReserved="false"
                 android:summary="@string/owner_fix_summary"
                 android:title="@string/owner_fix"/>
         <CheckBoxPreference
                 android:defaultValue="false"
                 android:key="loadTunModule"
+                app:iconSpaceReserved="false"
                 android:summary="@string/setting_loadtun_summary"
                 android:title="@string/setting_loadtun"/>
         <CheckBoxPreference
             android:defaultValue="false"
             android:title="Use internal file browser"
+            app:iconSpaceReserved="false"
             android:summary="Always use the very basic file browser instead of the Android file browser. Use this option if you have problems selecting files."
             android:key="useInternalFileSelector">
         </CheckBoxPreference>

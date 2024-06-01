@@ -5,7 +5,7 @@
     android:gravity="center_vertical"
     android:background="@color/primary"
     android:orientation="vertical"
-    android:padding="26dp"
+    android:padding="16dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
@@ -13,34 +13,7 @@
         android:layout_height="match_parent"
         android:src="@drawable/cat_pic_header"
         android:paddingTop="30dp"
-        android:tint="@color/primary_dark"
+        android:tint="#3A3543"
         />
 
-<!--    <TextView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:fontFamily="sans-serif-light"-->
-<!--        android:text="*Current configuration*"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:textSize="24sp"-->
-<!--        android:paddingTop="30dp"-->
-<!--        android:textStyle="bold" />-->
-
-<!--    <TextView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:paddingTop="8dp"-->
-<!--        android:textSize="24sp"-->
-<!--        android:textStyle="bold"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:text="*State*" />-->
-
-<!--    <TextView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:paddingTop="8dp"-->
-<!--        android:textSize="24sp"-->
-<!--        android:textStyle="bold"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:text="*Min stats*" />-->
 </LinearLayout>
